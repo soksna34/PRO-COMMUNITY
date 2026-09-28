@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0c14" />
+  <title>PRO COMMUNITY | مجتمع الألعاب</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div class="laser laser-one" aria-hidden="true"></div>
+  <div class="laser laser-two" aria-hidden="true"></div>
+  <div class="particle-field" id="particleField" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#leaderboard" data-route="leaderboard" aria-label="PRO COMMUNITY الرئيسية">
+      <span class="brand-mark"><i class="fa-solid fa-bolt"></i></span>
+      <span class="brand-copy"><strong>PRO</strong><small>COMMUNITY</small></span>
+    </a>
+    <nav class="main-nav" aria-label="التنقل الرئيسي">
+      <a href="#leaderboard" data-route="leaderboard" class="nav-link is-active"><i class="fa-solid fa-ranking-star"></i><span>لوحة الترتيب</span></a>
+      <a href="#wheel" data-route="wheel" class="nav-link"><i class="fa-solid fa-dharmachakra"></i><span>العجلة السحرية</span></a>
+      <a href="#about" data-route="about" class="nav-link"><i class="fa-solid fa-users"></i><span>عن المجتمع</span></a>
+    </nav>
+    <div class="header-status"><span class="status-dot"></span><span>النظام متصل</span></div>
+  </header>
+
+  <main class="app-shell">
+    <section class="view is-visible" id="leaderboardView" data-view="leaderboard" aria-labelledby="leaderboardTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow"><span></span> موسم المنافسة الحالي</p>
+          <h1 id="leaderboardTitle">قادة <em>الساحة</em></h1>
+          <p class="heading-note">أفضل اللاعبين في مجتمع PRO، يتغير الترتيب مع كل بطولة.</p>
+        </div>
+        <div class="season-card"><span>SEASON</span><strong id="seasonNumber">--</strong><i class="fa-solid fa-shield-halved"></i></div>
+      </div>
+
+      <div class="stats-strip" aria-label="إحصائيات المجتمع">
+        <div class="stat-item"><span class="stat-icon cyan"><i class="fa-solid fa-gamepad"></i></span><div><strong id="playerCount">--</strong><small>لاعب نشط</small></div></div>
+        <div class="stat-item"><span class="stat-icon violet"><i class="fa-solid fa-trophy"></i></span><div><strong id="tournamentCount">--</strong><small>بطولة مكتملة</small></div></div>
+        <div class="stat-item"><span class="stat-icon gold"><i class="fa-solid fa-fire"></i></span><div><strong id="totalPoints">--</strong><small>مجموع النقاط</small></div></div>
+        <div class="stat-item live-stat"><span class="live-pulse"></span><div><strong>LIVE</strong><small>المنافسة مستمرة</small></div></div>
+      </div>
+
+      <div class="podium-section">
+        <div class="section-label"><span>01</span><h2>منصة الأبطال</h2><div></div><small>TOP PERFORMERS</small></div>
+        <div class="podium" id="podium" aria-live="polite"></div>
+      </div>
+
+      <section class="table-section" aria-labelledby="tableTitle">
+        <div class="table-header">
+          <div class="section-label compact"><span>02</span><h2 id="tableTitle">الترتيب العام</h2></div>
+          <div class="table-actions">
+            <label class="search-field" for="playerSearch">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <input id="playerSearch" type="search" placeholder="ابحث عن اسمك أو لاعب..." autocomplete="off" />
+            </label>
+            <button class="refresh-btn" id="refreshBtn" type="button"><i class="fa-solid fa-rotate"></i><span>تحديث البيانات</span></button>
+          </div>
+        </div>
+        <div class="table-frame">
+          <div class="table-scroll">
+            <table aria-label="ترتيب لاعبي المجتمع">
+              <thead><tr><th>#</th><th>اللاعب</th><th>الرتبة</th><th>المستوى</th><th>النقاط</th><th>البطولات</th></tr></thead>
+              <tbody id="leaderboardBody"><tr><td colspan="6" class="loading-cell"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحميل البيانات...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="table-footer"><span><i class="fa-solid fa-circle-info"></i> البيانات مرتبطة مباشرة بمصدر المجتمع</span><span id="lastUpdated">آخر تحديث --</span></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="view about-view" id="aboutView" data-view="about" aria-labelledby="aboutTitle" hidden>
+      <div class="about-layout">
+        <div class="about-intro"><p class="eyebrow"><span></span> هوية تتجاوز اللعب</p><h1>هنا تبدأ<br /><em>أسطورتك.</em></h1><div class="vertical-line"></div><p class="about-aside">PLAY. COMPETE.<br />MAKE YOUR MARK.</p></div>
+        <article class="about-card">
+          <div class="card-topline"><span class="card-chip"><i class="fa-solid fa-bolt"></i> PRO MANIFESTO</span><span class="card-index">/ 02</span></div>
+          <div class="about-card-icon"><i class="fa-solid fa-users-viewfinder"></i></div>
+          <h2 id="aboutTitle">مجتمع PRO</h2>
+          <div class="accent-rule"></div>
+          <p class="about-copy">أهلاً بكل محبين مجتمع pro، إحنا هنا مش علشان إحنا مجرد مجتمع فقط ولكن علشان نترك بصمتنا في عالم الألعاب. إحنا بنبني عالم متكامل بيساعد أي لاعب إنه يوصل لحلمه ويقدر يندمج في عالم الألعاب ويستفيد من خلال اللعب. إحنا بنؤمن إن كل واحد فيكم عنده حلم وعنده هدف وإحنا هنا علشان نكون وسيط بينك وبين حلمك من خلال إننا نرسم ليك طريق كامل وخريطة واضحة للهدف مع منافسات قوية بين أعضاء المجتمع. هنا أنت بتظهر لينا رغبتك في إنك توصل، هتتدرب وتشارك وتظهر للعالم في منصاتنا واسمك يكون على كل لسان. دلوقتي الطريق قدامك وأنت اللي هتختار تكمل أو تقف. تحياتنا للجميع - مجتمع PRO.</p>
+          <div class="about-footer"><span><i class="fa-solid fa-crosshairs"></i> BUILT FOR THE BOLD</span><span class="footer-lines"></span><strong>PRO<span>.</span></strong></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="view wheel-view" id="wheelView" data-view="wheel" aria-labelledby="wheelTitle" hidden>
+      <div class="wheel-heading">
+        <div>
+          <p class="eyebrow"><span></span> سحب البطولة المباشر</p>
+          <h1 id="wheelTitle">العجلة <em>السحرية</em></h1>
+          <p class="heading-note">اختيار عشوائي عادل لأعضاء مجتمع PRO.</p>
+        </div>
+        <div class="wheel-status"><span class="status-dot"></span><span id="wheelStatus">جاري تجهيز المشاركين</span><button class="admin-lock" id="adminLock" type="button" aria-label="دخول المنظم" title="دخول المنظم"><i class="fa-solid fa-lock"></i></button></div>
+      </div>
+
+      <div class="wheel-layout">
+        <div class="wheel-console">
+          <div class="wheel-refresh-bar">
+            <button class="wheel-refresh-btn" id="wheelRefreshBtn" type="button">
+              <i class="fa-solid fa-rotate"></i>
+              <span>تحديث العجلة 🔄</span>
+            </button>
+            <span class="wheel-refresh-note" id="wheelRefreshNote" aria-live="polite">مزامنة كل 3 ثوانٍ</span>
+          </div>
+          <div class="wheel-stage" aria-live="polite">
+            <div class="wheel-confetti" id="wheelConfetti" aria-hidden="true"></div>
+            <div class="wheel-pointer" aria-hidden="true"><i class="fa-solid fa-caret-down"></i></div>
+            <div class="giveaway-wheel" id="giveawayWheel" role="img" aria-label="عجلة اختيار المشاركين">
+              <div class="wheel-labels" id="wheelLabels"></div>
+              <div class="wheel-core"><i class="fa-solid fa-bolt"></i></div>
+            </div>
+            <div class="wheel-scanline" aria-hidden="true"></div>
+          </div>
+          <div class="wheel-result" id="wheelResult">بانتظار المنظم لبدء القرعة</div>
+          <div class="wheel-controls">
+            <button class="spin-btn" id="spinBtn" type="button" disabled><i class="fa-solid fa-hourglass-half"></i><span>بانتظار المنظم لبدء القرعة ⏳</span></button>
+            <button class="reset-wheel-btn" id="resetWheelBtn" type="button" hidden><i class="fa-solid fa-play"></i><span>لف العجلة تجريبياً</span></button>
+          </div>
+        </div>
+
+        <section class="winners-panel" aria-labelledby="winnersTitle">
+          <div class="section-label compact"><span>TOP 10</span><h2 id="winnersTitle">قائمة المقبولين في البطولة</h2><div></div></div>
+          <div class="winners-frame">
+            <ol class="winners-list" id="winnersList"></ol>
+            <div class="winners-empty" id="winnersEmpty"><i class="fa-solid fa-satellite-dish"></i><span>لم يتم اختيار أي فائز بعد</span></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><span>© 2024 PRO COMMUNITY</span><span class="footer-center"><i class="fa-solid fa-signal"></i> ALL SYSTEMS NOMINAL</span><span>المنافسة تصنع الأبطال</span></footer>
+
+  <div class="winner-modal" id="winnerModal" hidden role="dialog" aria-modal="true" aria-labelledby="winnerModalTitle">
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <div class="winner-modal-card">
+      <i class="fa-solid fa-trophy winner-modal-icon"></i>
+      <p class="eyebrow"><span></span> المهمة اكتملت</p>
+      <h2 id="winnerModalTitle">قائمة الأبطال جاهزة</h2>
+      <p>تم اختيار المقبولين العشرة بنجاح.</p>
+      <button class="spin-btn" id="closeWinnerModal" type="button"><i class="fa-solid fa-check"></i><span>تم</span></button>
+    </div>
+  </div>
+
+  <div class="winner-modal admin-modal" id="adminModal" hidden role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+    <form class="winner-modal-card admin-modal-card" id="adminForm">
+      <i class="fa-solid fa-shield-halved winner-modal-icon"></i>
+      <p class="eyebrow"><span></span> وصول المنظم</p>
+      <h2 id="adminModalTitle">فتح لوحة التحكم</h2>
+      <label class="admin-pin-label" for="adminPinInput">كلمة سر المنظم</label>
+      <input class="admin-pin-input" id="adminPinInput" type="password" autocomplete="off" maxlength="30" />
+      <p class="admin-pin-error" id="adminPinError" hidden>كلمة السر غير صحيحة</p>
+      <div class="admin-modal-actions">
+        <button class="spin-btn" type="submit"><i class="fa-solid fa-unlock"></i><span>دخول</span></button>
+        <button class="reset-wheel-btn" id="closeAdminModal" type="button"><i class="fa-solid fa-xmark"></i><span>إلغاء</span></button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
