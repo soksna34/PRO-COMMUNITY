@@ -10,6 +10,12 @@ let wheelRotation = 0;
 let wheelBusy = false;
 let adminMode = false;
 let wheelSyncInFlight = false;
+let activeHeroLayer = -1;
+let heroBannerRequest = 0;
+let heroBannerSources = { desktop: [], tablet: [], mobile: [] };
+let activeHeroSourceKey = '';
+let pendingHeroSourceKey = '';
+let heroResizeFrame = 0;
 
 const elements = {
   body: document.body,
@@ -86,7 +92,7 @@ function avatarMarkup(player, className) {
   const avatarUrl = player.avatar;
   const hasValidAvatar = /^https?:\/\//i.test(avatarUrl);
   const image = hasValidAvatar
-    ? `<img class="avatar-image" src="${escapeHtml(avatarUrl)}" alt="صورة ${escapeHtml(player.name)}" onerror="this.remove()">`
+    ? `<img class="avatar-image" src="${escapeHtml(avatarUrl)}" alt="صورة ${escapeHtml(player.name)}" loading="lazy" onerror="this.remove()">`
     : '';
   return `<span class="${className}">${image}<span class="avatar-fallback">${fallback}</span></span>`;
 }
@@ -100,12 +106,11 @@ function renderPodium(players) {
   elements.podium.innerHTML = slots.map((player, index) => {
     const current = player;
     if (!current) {
-      return `<article class="podium-card ${classes[index]} is-empty"><span class="medal">${medals[index]}</span><div class="avatar">--</div><h3>غير متاح</h3><span class="rank-title">بانتظار بيانات اللاعب</span><div class="podium-details"><div><strong>--</strong><small>نقطة</small></div><div><strong>--</strong><small>بطولة</small></div></div></article>`;
+      return `<article class="podium-card ${classes[index]} is-empty"><div class="podium-avatar-wrap"><span class="medal">${medals[index]}</span><div class="avatar">--</div></div><h3>غير متاح</h3><span class="rank-title">بانتظار بيانات اللاعب</span><div class="podium-details"><div><strong>--</strong><small>نقطة</small></div><div><strong>--</strong><small>بطولة</small></div></div></article>`;
     }
     return `<article class="podium-card ${classes[index]}">
       ${index === 1 ? '<i class="fa-solid fa-crown crown" aria-label="المركز الأول"></i>' : ''}
-      <span class="medal">${medals[index]}</span>
-      ${avatarMarkup(current, 'avatar')}
+      <div class="podium-avatar-wrap"><span class="medal">${medals[index]}</span>${avatarMarkup(current, 'avatar')}</div>
       <h3>${current.name}</h3><span class="rank-title">${labels[index]} / ${current.rank} / LVL ${current.level}</span>
       <div class="podium-details"><div><strong>${current.points.toLocaleString('en-US')}</strong><small>نقطة</small></div><div><strong>${current.tournaments}</strong><small>بطولة</small></div></div>
     </article>`;
@@ -372,11 +377,141 @@ async function fetchPlayers() {
   return players;
 }
 
+function updateBrandLogo(value) {
+  const logoImage = document.querySelector('.brand-logo');
+  const logoValue = String(value ?? '').trim();
+  if (!logoImage) return;
+  if (!logoValue) {
+    logoImage.hidden = true;
+    return;
+  }
+
+  let logoUrl;
+  try {
+    logoUrl = new URL(logoValue, window.location.href);
+  } catch (error) {
+    logoImage.hidden = true;
+    return;
+  }
+  if (!['http:', 'https:'].includes(logoUrl.protocol)) {
+    logoImage.hidden = true;
+    return;
+  }
+
+  const preload = new Image();
+  preload.onload = () => {
+    logoImage.src = logoUrl.href;
+    logoImage.hidden = false;
+
+    let favicon = document.querySelector('link[rel~="icon"]');
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.rel = 'icon';
+      document.head.appendChild(favicon);
+    }
+    favicon.removeAttribute('type');
+    favicon.href = logoUrl.href;
+  };
+  preload.onerror = () => { logoImage.hidden = true; };
+  preload.src = logoUrl.href;
+}
+
+function applyHeroBannerForViewport() {
+  const layers = document.querySelectorAll('.leaderboard-hero__layer');
+  if (!layers.length) return;
+
+  const width = window.innerWidth;
+  const breakpoint = width > 1024 ? 'desktop' : width >= 768 ? 'tablet' : 'mobile';
+  const sources = heroBannerSources[breakpoint];
+  const sourceKey = `${breakpoint}:${sources.join('|')}`;
+
+  if (activeHeroSourceKey === sourceKey) {
+    if (pendingHeroSourceKey) {
+      heroBannerRequest += 1;
+      pendingHeroSourceKey = '';
+    }
+    return;
+  }
+  if (pendingHeroSourceKey === sourceKey) return;
+
+  const requestId = ++heroBannerRequest;
+  pendingHeroSourceKey = sourceKey;
+
+  const clearBanner = () => {
+    if (requestId !== heroBannerRequest) return;
+    layers.forEach((layer) => layer.classList.remove('is-visible'));
+    activeHeroLayer = -1;
+    pendingHeroSourceKey = '';
+    activeHeroSourceKey = sourceKey;
+  };
+
+  const loadSource = (index) => {
+    if (requestId !== heroBannerRequest) return;
+    const source = sources[index];
+    if (!source) {
+      clearBanner();
+      return;
+    }
+
+    const preload = new Image();
+    preload.onload = () => {
+      if (requestId !== heroBannerRequest) return;
+      if (Array.from(layers).some((layer) => layer.classList.contains('is-visible') && layer.style.backgroundImage.includes(source))) {
+        pendingHeroSourceKey = '';
+        activeHeroSourceKey = sourceKey;
+        return;
+      }
+
+      const nextIndex = activeHeroLayer === 0 ? 1 : 0;
+      const nextLayer = layers[nextIndex];
+      nextLayer.style.backgroundImage = `linear-gradient(to bottom, rgba(10, 14, 23, 0.22), rgba(10, 14, 23, 0.38)), url("${source}")`;
+      requestAnimationFrame(() => {
+        if (requestId !== heroBannerRequest) return;
+        nextLayer.classList.add('is-visible');
+        if (activeHeroLayer >= 0) layers[activeHeroLayer].classList.remove('is-visible');
+        activeHeroLayer = nextIndex;
+        pendingHeroSourceKey = '';
+        activeHeroSourceKey = sourceKey;
+      });
+    };
+    preload.onerror = () => loadSource(index + 1);
+    preload.src = source;
+  };
+
+  loadSource(0);
+}
+
+function updateHeroBanner(desktopValue, tabletValue, mobileValue) {
+  const toUrl = (value) => {
+    const url = String(value ?? '').trim();
+    if (!url) return '';
+    try {
+      const parsed = new URL(url, window.location.href);
+      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+    } catch (error) {
+      return '';
+    }
+  };
+  const desktop = toUrl(desktopValue);
+  const tablet = toUrl(tabletValue);
+  const mobile = toUrl(mobileValue);
+  heroBannerSources = {
+    desktop: [...new Set([desktop].filter(Boolean))],
+    tablet: [...new Set([tablet, desktop].filter(Boolean))],
+    mobile: [...new Set([mobile, tablet, desktop].filter(Boolean))]
+  };
+  applyHeroBannerForViewport();
+}
+
 async function fetchStats() {
   const response = await fetch('https://opensheet.elk.sh/1VCEryDPa8nauq0kTAGQS6msA-z_-rZbxR2qTOEEXGqQ/Stats');
   if (!response.ok) throw new Error('Stats API unavailable');
   const data = await response.json();
   const stats = Array.isArray(data) ? data[0] : null;
+  if (stats) {
+    updateBrandLogo(stats.Logo);
+    updateHeroBanner(stats.Panar, stats.Panar2, stats.Panar3 ?? stats['Panar 3']);
+  }
   if (!stats || stats.season == null || stats.TotalTournaments == null) throw new Error('Stats data is empty');
   return stats;
 }
@@ -474,6 +609,13 @@ elements.winnerModal.addEventListener('click', (event) => { if (event.target ===
 window.addEventListener('hashchange', () => {
   const route = window.location.hash.slice(1);
   navigate(route === 'about' || route === 'wheel' ? route : 'leaderboard');
+});
+window.addEventListener('resize', () => {
+  if (heroResizeFrame) cancelAnimationFrame(heroResizeFrame);
+  heroResizeFrame = requestAnimationFrame(() => {
+    heroResizeFrame = 0;
+    applyHeroBannerForViewport();
+  });
 });
 
 createParticles();

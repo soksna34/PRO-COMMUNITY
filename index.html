@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0a0c14" />
   <title>PRO COMMUNITY | مجتمع الألعاب</title>
+  <link rel="icon" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,12 +21,12 @@
 
   <header class="site-header">
     <a class="brand" href="#leaderboard" data-route="leaderboard" aria-label="PRO COMMUNITY الرئيسية">
-      <span class="brand-mark"><i class="fa-solid fa-bolt"></i></span>
+      <img class="brand-logo" alt="" hidden />
       <span class="brand-copy"><strong>PRO</strong><small>COMMUNITY</small></span>
     </a>
     <nav class="main-nav" aria-label="التنقل الرئيسي">
       <a href="#leaderboard" data-route="leaderboard" class="nav-link is-active"><i class="fa-solid fa-ranking-star"></i><span>لوحة الترتيب</span></a>
-      <a href="#wheel" data-route="wheel" class="nav-link"><i class="fa-solid fa-dharmachakra"></i><span>العجلة السحرية</span></a>
+      <a href="#wheel" data-route="wheel" class="nav-link"><i class="fa-solid fa-dharmachakra"></i><span>عجلة النظام</span></a>
       <a href="#about" data-route="about" class="nav-link"><i class="fa-solid fa-users"></i><span>عن المجتمع</span></a>
     </nav>
     <div class="header-status"><span class="status-dot"></span><span>النظام متصل</span></div>
@@ -33,20 +34,24 @@
 
   <main class="app-shell">
     <section class="view is-visible" id="leaderboardView" data-view="leaderboard" aria-labelledby="leaderboardTitle">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow"><span></span> موسم المنافسة الحالي</p>
-          <h1 id="leaderboardTitle">قادة <em>الساحة</em></h1>
-          <p class="heading-note">أفضل اللاعبين في مجتمع PRO، يتغير الترتيب مع كل بطولة.</p>
+      <div class="leaderboard-hero">
+        <div class="leaderboard-hero__layer" aria-hidden="true"></div>
+        <div class="leaderboard-hero__layer" aria-hidden="true"></div>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow"><span></span> موسم المنافسة الحالي</p>
+            <h1 id="leaderboardTitle">قادة <em>الساحة</em></h1>
+            <p class="heading-note">أفضل اللاعبين في مجتمع PRO، يتغير الترتيب مع كل بطولة.</p>
+          </div>
+          <div class="season-card"><span>SEASON</span><strong id="seasonNumber"></strong><i class="fa-solid fa-shield-halved"></i></div>
         </div>
-        <div class="season-card"><span>SEASON</span><strong id="seasonNumber"></strong><i class="fa-solid fa-shield-halved"></i></div>
-      </div>
 
-      <div class="stats-strip" aria-label="إحصائيات المجتمع">
-        <div class="stat-item"><span class="stat-icon cyan"><i class="fa-solid fa-gamepad"></i></span><div><strong id="playerCount">--</strong><small>لاعب نشط</small></div></div>
-        <div class="stat-item"><span class="stat-icon violet"><i class="fa-solid fa-trophy"></i></span><div><strong id="tournamentCount"></strong><small>بطولة مكتملة</small></div></div>
-        <div class="stat-item"><span class="stat-icon gold"><i class="fa-solid fa-fire"></i></span><div><strong id="totalPoints">--</strong><small>مجموع النقاط</small></div></div>
-        <div class="stat-item live-stat"><span class="live-pulse"></span><div><strong>LIVE</strong><small>المنافسة مستمرة</small></div></div>
+        <div class="stats-strip" aria-label="إحصائيات المجتمع">
+          <div class="stat-item"><span class="stat-icon cyan"><i class="fa-solid fa-gamepad"></i></span><div><strong id="playerCount">--</strong><small>لاعب نشط</small></div></div>
+          <div class="stat-item"><span class="stat-icon violet"><i class="fa-solid fa-trophy"></i></span><div><strong id="tournamentCount"></strong><small>بطولة مكتملة</small></div></div>
+          <div class="stat-item"><span class="stat-icon gold"><i class="fa-solid fa-fire"></i></span><div><strong id="totalPoints">--</strong><small>مجموع النقاط</small></div></div>
+          <div class="stat-item live-stat"><span class="live-pulse"></span><div><strong>LIVE</strong><small>المنافسة مستمرة</small></div></div>
+        </div>
       </div>
 
       <div class="podium-section">
@@ -95,7 +100,7 @@
       <div class="wheel-heading">
         <div>
           <p class="eyebrow"><span></span> سحب البطولة المباشر</p>
-          <h1 id="wheelTitle">العجلة <em>السحرية</em></h1>
+          <h1 id="wheelTitle">عجلة <em>النظام</em></h1>
           <p class="heading-note">اختيار عشوائي عادل لأعضاء مجتمع PRO.</p>
         </div>
         <div class="wheel-status"><span class="status-dot"></span><span id="wheelStatus">جاري تجهيز المشاركين</span><button class="admin-lock" id="adminLock" type="button" aria-label="دخول المنظم" title="دخول المنظم"><i class="fa-solid fa-lock"></i></button></div>
