@@ -1,16 +1,5 @@
 const WHEEL_POLL_INTERVAL = 3000;
 
-const fallbackPlayers = [
-  { name: 'ShadowX', rank: 'Legend', level: '50', points: 9840, tournaments: 27 },
-  { name: 'NOVA_7', rank: 'PRO', level: '44', points: 9210, tournaments: 24 },
-  { name: 'Ragnar', rank: 'VIP', level: '41', points: 8875, tournaments: 21 },
-  { name: 'CyberWolf', rank: 'PRO', level: '38', points: 8240, tournaments: 19 },
-  { name: 'Vortex', rank: 'VIP', level: '36', points: 7980, tournaments: 17 },
-  { name: 'Ghost_01', rank: 'PRO', level: '32', points: 7645, tournaments: 15 },
-  { name: 'Maverick', rank: 'VIP', level: '29', points: 7310, tournaments: 13 },
-  { name: 'AcePrime', rank: 'PRO', level: '26', points: 6985, tournaments: 11 }
-];
-
 let leaderboardPlayers = [];
 let wheelPlayers = [];
 let wheelWinners = [];
@@ -65,10 +54,10 @@ function formatNumber(value) {
   return numberFrom(value).toLocaleString('en-US');
 }
 
-function normalizePlayer(raw, index) {
+function normalizePlayer(raw) {
   const levelKey = Object.keys(raw || {}).find((key) => key.toLowerCase() === 'level' || key.includes('المستوى'));
   return {
-    name: String(raw?.Player ?? `Player_${index + 1}`).trim(),
+    name: String(raw?.Player ?? '').trim(),
     rank: String(raw?.Role ?? 'PRO').trim(),
     level: String(raw?.Level ?? (levelKey ? raw[levelKey] : '-') ?? '-').trim(),
     points: numberFrom(raw?.Points),
@@ -214,7 +203,7 @@ function renderWinners() {
 }
 
 async function fetchWheelState() {
-  const response = await fetch('/api/data?type=wheel');
+  const response = await fetch('https://opensheet.elk.sh/15OuMkXW22mZXAbLfjw9tdap6uut3HHJJx8ekR-EGStI/sheet1');
   if (!response.ok) throw new Error('Wheel API unavailable');
   const data = await response.json();
   const rows = Array.isArray(data) ? data : [];
@@ -376,26 +365,24 @@ function toggleAdminMode() {
 }
 
 async function fetchPlayers() {
-  const response = await fetch('/api/data?type=players');
+  const response = await fetch('https://opensheet.elk.sh/1OQgoEjv83opeB4qv7Y7LzZF3hykGJRGYcDJOt2Pcdd4/sheet1');
   if (!response.ok) throw new Error('Players API unavailable');
   const data = await response.json();
   const players = Array.isArray(data) ? data.map(normalizePlayer).filter((player) => player.name) : [];
-  return players.length ? players : fallbackPlayers;
+  return players;
 }
 
 async function fetchStats() {
-  const response = await fetch('/api/data?type=stats');
+  const response = await fetch('https://opensheet.elk.sh/1VCEryDPa8nauq0kTAGQS6msA-z_-rZbxR2qTOEEXGqQ/Stats');
   if (!response.ok) throw new Error('Stats API unavailable');
   const data = await response.json();
-  const stats = Array.isArray(data)
-    ? data.find((row) => row && (row.Season !== undefined || row.TotalTournaments !== undefined))
-    : data;
-  if (!stats) throw new Error('Stats data is empty');
+  const stats = Array.isArray(data) ? data[0] : null;
+  if (!stats || stats.season == null || stats.TotalTournaments == null) throw new Error('Stats data is empty');
   return stats;
 }
 
 function renderStats(stats, players) {
-  elements.season.textContent = String(numberFrom(stats.Season)).padStart(2, '0');
+  elements.season.textContent = String(numberFrom(stats.season)).padStart(2, '0');
   elements.tournaments.textContent = formatNumber(stats.TotalTournaments);
   elements.count.textContent = String(players.length).padStart(2, '0');
   elements.totalPoints.textContent = formatNumber(players.reduce((total, player) => total + player.points, 0));
@@ -404,12 +391,12 @@ function renderStats(stats, players) {
 async function loadData() {
   elements.refresh.classList.add('is-loading');
   const [playersResult, statsResult] = await Promise.allSettled([fetchPlayers(), fetchStats()]);
-  const players = playersResult.status === 'fulfilled' ? playersResult.value : fallbackPlayers;
+  const players = playersResult.status === 'fulfilled' ? playersResult.value : [];
   renderPlayers(players);
   if (statsResult.status === 'fulfilled') renderStats(statsResult.value, players);
   else {
-    elements.season.textContent = '--';
-    elements.tournaments.textContent = '--';
+    elements.season.textContent = '';
+    elements.tournaments.textContent = '';
     elements.totalPoints.textContent = formatNumber(players.reduce((total, player) => total + player.points, 0));
   }
   if (playersResult.status === 'rejected' || statsResult.status === 'rejected') elements.updated.textContent = 'تم تحديث البيانات المتاحة';
